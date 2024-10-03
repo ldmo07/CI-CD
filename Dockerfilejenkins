@@ -1,0 +1,19 @@
+FROM jenkins/jenkins
+
+# Cambiar a usuario root para instalar paquetes
+USER root
+
+# Instalar Node.js
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs
+
+# Instalar Nginx
+#RUN apt-get update && \
+ #   apt-get install -y nginx
+
+#creo carpeta para angular
+RUN mkdir -p /angularapp
+
+
+# Cambiar de nuevo al usuario jenkins
+USER jenkins

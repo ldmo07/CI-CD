@@ -1,0 +1,99 @@
+Ejemplo-CI-CD-Docker Token = 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
+
+RECURSO => https://www.youtube.com/watch?v=Gj9lfhzrub4
+
+1 .dentro de la carpeta del dockerfile de jenkins ejecutar => docker build -t "nombreImagene" --no-cache .
+	ej =>  docker build -t jenkins-cicd --no-cache .
+
+2. docker run -d -p:8080:8080 -p:5000:5000 --name nombreContenedor nombreImagen
+	ej => docker run -d -p:8080:8080 -p:5000:5000 --name jenkins jenkins-cicd
+	
+   docker run -d -p:8080:8080 -p:5000:5000 -v nombreVolumen:/rutaAsociada --name nombreContenedor nombreImagen
+	ej con volumen => docker run -d -v angularapp:/angularapp -p:8080:8080 -p:5000:5000 --name jenkins jenkins-cicd 
+
+3. http://10.0.26.12:8080
+
+4.obtener token de jenkisns => docker logs nombreContenedor ej=> docker logs jenkins
+	este token se debe usar en la pagina de jenkins
+
+
+5. dentro de la plataforma de jenkins crear un usuario y password 
+	user => admin
+	password=> admin
+	nombre completo => jenkins ci server
+	correo => admin@admin
+
+6. url de jenkins => http://10.0.26.12:8080/
+
+7. crear repositorio en github y subir el codigo
+
+8. en jenkisn darle la opcion create a jobs y elejimos la opcion de pipeline
+
+9. luego seleccionamos la opcion de Githbut project
+
+10. poner la url del repo de git => https://github.com/ldmo07/jenkins_cicd.git
+
+11. en build triggers seleccionamos la opcion consultar repositorio (SCM) y en la parte programado ponermo lo siguiente * * * * *
+	eso para que se ejecute cada minuto
+
+
+12.DEFINIMOS EL PIPE LINE A EJCUTAR
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Clonar Repositorio') {
+            steps {
+                git branch: 'main', url: 'https://github.com/ldmo07/jenkins_cicd'
+            }
+        }
+        stage('Construir Aplicación') {
+            steps {
+                sh 'npm install'
+                sh 'npm run build --prod'
+            }
+        }
+        stage('Copiar a Nginx') {
+            steps {
+                script {
+                    //def nginxContainerId = sh(script: "docker ps -qf 'ancestor=jenkins/jenkins'", returnStdout: true).trim()
+                    //sh "docker cp dist/your-angular-app/. ${nginxContainerId}:/usr/share/nginx/html"
+                    // Cambia los permisos del directorio para permitir la escritura
+                    //sh "sudo chmod -R 777 /usr/share/nginx/html"
+                    // Copia los archivos de la carpeta 'dist' al directorio de Nginx
+                    sh "cp -r dist/. /usr/share/nginx/html"
+                }
+            }
+        }
+    }
+}
+
+
+------------------------------------------------
+pipeline {
+    agent any
+
+    stages {
+        stage('Clonar Repositorio') {
+            steps {
+                git branch: 'main', url: 'https://github.com/ldmo07/jenkins_cicd'
+            }
+        }
+        stage('Construir Aplicación') {
+            steps {
+                sh 'npm install'
+                sh 'npm run build --prod'
+            }
+        }
+        stage('Copiar a Nginx') {
+            steps {
+                script {
+                    // Copia los archivos de la carpeta 'dist' al directorio de Nginx
+                    sh "cp -r dist/front/browser/. /angularapp"
+                }
+            }
+        }
+    }
+}
+
